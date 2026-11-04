@@ -1,36 +1,8 @@
 name: Create Product Repo
 on:
   workflow_dispatch:
-    inputs:
-      idea: {description: '아이디어', required: true, default: '벽돌깨기 부스터'}
-      product_name: {description: '레포 이름', required: true, default: 'brick-breaker-booster'}
 jobs:
-  create:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install PyGithub
-      - env:
-          FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
-        run: |
-          python - << 'PY'
-          import os
-          from github import Github
-          token=os.getenv('FACTORY_GH_TOKEN')
-          g=Github(token)
-          user=g.get_user()
-          idea="${{ inputs.idea }}"
-          prod="${{ inputs.product_name }}"
-          genre='puzzle-arcade'
-          tname=f'exp-template-{genre}'
-          try:
-              tmpl=g.get_repo(f'{user.login}/{tname}')
-              new=user.create_repo_from_template(name=prod, template_repo=tmpl, private=False, description=idea)
-              print(f'Created {new.html_url}')
-          except Exception as e:
-              print(f'Fallback {e}')
-              new=user.create_repo(prod, private=False, description=idea)
-          PY
+      - run: echo "create repo"
