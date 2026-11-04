@@ -1,33 +1,64 @@
 
-import os, pathlib, subprocess
+import os, pathlib, subprocess, shutil, json
 from github import Github
+
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 TEMPLATES_DIR = ROOT / "packages" / "templates"
+
 def run(cmd):
     print(f"$ {cmd}")
     subprocess.check_call(cmd, shell=True)
+
 def publish():
     token = os.getenv("FACTORY_GH_TOKEN")
-    if not token: return
+    if not token:
+        print("FACTORY_GH_TOKEN not set")
+        return
     g = Github(token)
     user = g.get_user()
+    print(f"User: {user.login}")
     for tmpl_dir in TEMPLATES_DIR.iterdir():
-        if not tmpl_dir.is_dir(): continue
+        if not tmpl_dir.is_dir():
+            continue
         genre = tmpl_dir.name
         repo_name = f"exp-template-{genre}"
+        print(f"\n=== Processing {genre} -> {repo_name} ===")
         try:
             repo = g.get_repo(f"{user.login}/{repo_name}")
-        except:
-            repo = user.create_repo(repo_name, private=False, description=f"Template {genre}", is_template=True)
-        import requests, time
-        requests.patch(f"https://api.github.com/repos/{user.login}/{repo_name}", headers={"Authorization": f"token {token}"}, json={"is_template": True})
+            print(f"Repo exists: {repo.html_url}")
+        except Exception:
+            print(f"Creating repo {repo_name}")
+            repo = user.create_repo(repo_name, private=False, description=f"Template {genre} for exp-factory", is_template=True)
+        
+        # ensure is_template true via API
+        try:
+            import requests
+            r = requests.patch(f"https://api.github.com/repos/{user.login}/{repo_name}",
+                headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"},
+                json={"is_template": True})
+            print(f"Set template flag: {r.status_code}")
+        except Exception as e:
+            print(f"Template flag error: {e}")
+
         tmp = pathlib.Path(f"/tmp/{repo_name}")
-        if tmp.exists(): run(f"rm -rf {tmp}")
+        if tmp.exists():
+            shutil.rmtree(tmp)
         run(f"git clone https://{token}@github.com/{user.login}/{repo_name}.git {tmp}")
-        run(f"find {tmp} -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {{}} +")
+        # clean except .git
+        for item in tmp.iterdir():
+            if item.name == ".git":
+                continue
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+        # copy
         run(f"cp -r {tmpl_dir}/. {tmp}/")
         run(f"cd {tmp} && git config user.name 'factory-bot' && git config user.email 'factory-bot@users.noreply.github.com'")
-        run(f"cd {tmp} && git add . && git commit -m 'auto publish {genre}' || true")
-        run(f"cd {tmp} && git push origin main || git push origin master || true")
+        run(f"cd {tmp} && git add .")
+        run(f"cd {tmp} && git commit -m 'auto publish {genre} from factory' || echo 'no changes'")
+        run(f"cd {tmp} && git push origin HEAD:main || git push origin HEAD:master || true")
+        print(f"Done {repo_name}")
+
 if __name__ == "__main__":
     publish()
