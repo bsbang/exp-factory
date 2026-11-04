@@ -1,8 +1,17 @@
 name: Factory Dev Loop
 on:
+  issues:
+    types: [labeled]
   workflow_dispatch:
+
 jobs:
-  build:
+  dev:
+    if: ${{ startsWith(github.event.label.name, 'approve:phase-') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
     steps:
-      - run: echo "factory"
+      - uses: actions/checkout@v4
+      - name: Run
+        run: echo "Factory dev loop for ${{ github.event.label.name }}"
