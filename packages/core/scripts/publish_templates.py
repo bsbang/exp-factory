@@ -1,5 +1,9 @@
-import os, pathlib, subprocess, shutil
-from 【entity-github¦canonical_name=Github】 import 【entity-Github¦canonical_name=Github】
+import os
+import pathlib
+import subprocess
+import shutil
+import requests
+from github import Github
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 TEMPLATES_DIR = ROOT / "packages" / "templates"
@@ -13,9 +17,12 @@ def publish():
     if not token:
         print("FACTORY_GH_TOKEN not set")
         return
-    g = 【entity-Github¦canonical_name=Github】(token)
+    g = Github(token)
     user = g.get_user()
     print(f"User: {user.login}")
+    if not TEMPLATES_DIR.exists():
+        print(f"TEMPLATES_DIR not found: {TEMPLATES_DIR}")
+        return
     for tmpl_dir in TEMPLATES_DIR.iterdir():
         if not tmpl_dir.is_dir():
             continue
@@ -28,9 +35,9 @@ def publish():
         except Exception:
             print(f"Creating repo {repo_name}")
             repo = user.create_repo(repo_name, private=False, description=f"Template {genre} for exp-factory")
+            print(f"Created: {repo.html_url}")
         
         try:
-            import requests
             r = requests.patch(f"https://api.github.com/repos/{user.login}/{repo_name}",
                 headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"},
                 json={"is_template": True})

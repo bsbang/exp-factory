@@ -1,7 +1,6 @@
-
 import os
 from github import Github
-token=os.getenv("FACTORY_GH_TOKEN")
+token=os.getenv("FACTORY_GH_TOKEN","").strip()
 idea=os.getenv("IDEA","test idea")
 prod=os.getenv("PRODUCT_NAME","brick-breaker-booster")
 g=Github(token)
