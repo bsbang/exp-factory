@@ -3,14 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       idea:
-        description: '아이디어 한 줄'
+        description: 'idea'
         required: true
-        default: '벽돌깨기 부스터'
+        default: 'brick breaker booster'
       product_name:
-        description: '생성할 레포 이름'
+        description: 'repo name'
         required: true
         default: 'brick-breaker-booster'
-
 jobs:
   create:
     runs-on: ubuntu-latest
@@ -19,10 +18,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
-        run: pip install PyGithub
-      - name: Create product repo
-        env:
+      - run: pip install PyGithub
+      - env:
           FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
           IDEA: ${{ inputs.idea }}
           PRODUCT_NAME: ${{ inputs.product_name }}
