@@ -1,6 +1,5 @@
-
-import os, pathlib, subprocess, shutil, json
-from github import Github
+import os, pathlib, subprocess, shutil
+from 【entity-github¦canonical_name=Github】 import 【entity-Github¦canonical_name=Github】
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 TEMPLATES_DIR = ROOT / "packages" / "templates"
@@ -14,7 +13,7 @@ def publish():
     if not token:
         print("FACTORY_GH_TOKEN not set")
         return
-    g = Github(token)
+    g = 【entity-Github¦canonical_name=Github】(token)
     user = g.get_user()
     print(f"User: {user.login}")
     for tmpl_dir in TEMPLATES_DIR.iterdir():
@@ -28,9 +27,8 @@ def publish():
             print(f"Repo exists: {repo.html_url}")
         except Exception:
             print(f"Creating repo {repo_name}")
-            repo = user.create_repo(repo_name, private=False, description=f"Template {genre} for exp-factory", is_template=True)
+            repo = user.create_repo(repo_name, private=False, description=f"Template {genre} for exp-factory")
         
-        # ensure is_template true via API
         try:
             import requests
             r = requests.patch(f"https://api.github.com/repos/{user.login}/{repo_name}",
@@ -44,7 +42,6 @@ def publish():
         if tmp.exists():
             shutil.rmtree(tmp)
         run(f"git clone https://{token}@github.com/{user.login}/{repo_name}.git {tmp}")
-        # clean except .git
         for item in tmp.iterdir():
             if item.name == ".git":
                 continue
@@ -52,7 +49,6 @@ def publish():
                 shutil.rmtree(item)
             else:
                 item.unlink()
-        # copy
         run(f"cp -r {tmpl_dir}/. {tmp}/")
         run(f"cd {tmp} && git config user.name 'factory-bot' && git config user.email 'factory-bot@users.noreply.github.com'")
         run(f"cd {tmp} && git add .")
