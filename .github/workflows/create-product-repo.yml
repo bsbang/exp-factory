@@ -1,8 +1,29 @@
 name: Create Product Repo
 on:
   workflow_dispatch:
+    inputs:
+      idea:
+        description: '아이디어 한 줄'
+        required: true
+        default: '벽돌깨기 부스터'
+      product_name:
+        description: '생성할 레포 이름'
+        required: true
+        default: 'brick-breaker-booster'
+
 jobs:
-  build:
+  create:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "create repo"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install PyGithub
+      - name: Create product repo
+        env:
+          FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          IDEA: ${{ inputs.idea }}
+          PRODUCT_NAME: ${{ inputs.product_name }}
+        run: python packages/core/scripts/create_product.py
