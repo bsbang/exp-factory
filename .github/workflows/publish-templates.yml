@@ -1,8 +1,21 @@
 name: Publish Templates
 on:
+  push:
+    paths:
+      - 'packages/templates/**'
   workflow_dispatch:
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello Factory"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install PyGithub requests
+      - name: Publish
+        env:
+          FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+        run: python packages/core/scripts/publish_templates.py
