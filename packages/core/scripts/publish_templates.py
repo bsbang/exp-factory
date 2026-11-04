@@ -10,7 +10,7 @@ def run(cmd):
     subprocess.check_call(cmd, shell=True)
 
 def publish():
-    token = os.getenv("FACTORY_GH_TOKEN")
+    token = os.getenv("FACTORY_GH_TOKEN","").strip()
     if not token:
         print("FACTORY_GH_TOKEN not set")
         return
