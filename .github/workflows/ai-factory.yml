@@ -2,13 +2,10 @@ name: Factory Dev Loop
 on:
   issues:
     types: [labeled]
-
 jobs:
   dev:
     if: startsWith(github.event.label.name, 'approve:phase-')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Factory dev loop for ${{ github.event.label.name }}"
+      - run: echo "dev loop"

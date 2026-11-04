@@ -4,7 +4,6 @@ on:
     paths:
       - 'packages/templates/**'
   workflow_dispatch:
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -13,8 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install 【entity-PyGithub¦canonical_name=GitHub】 requests
-      - name: Publish templates
-        env:
+      - run: pip install PyGithub requests
+      - env:
           FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
         run: python packages/core/scripts/publish_templates.py

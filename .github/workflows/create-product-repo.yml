@@ -2,15 +2,8 @@ name: Create Product Repo
 on:
   workflow_dispatch:
     inputs:
-      idea:
-        description: '아이디어 한 줄'
-        required: true
-        default: '벽돌깨기 부스터'
-      product_name:
-        description: '생성할 레포 이름'
-        required: true
-        default: 'brick-breaker-booster'
-
+      idea: {description: '아이디어', required: true, default: '벽돌깨기 부스터'}
+      product_name: {description: '레포 이름', required: true, default: 'brick-breaker-booster'}
 jobs:
   create:
     runs-on: ubuntu-latest
@@ -20,28 +13,24 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install PyGithub
-      - name: Create product repo
-        env:
+      - env:
           FACTORY_GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
-          IDEA: ${{ inputs.idea }}
-          PRODUCT_NAME: ${{ inputs.product_name }}
         run: |
-          python -c "
+          python - << 'PY'
           import os
           from github import Github
           token=os.getenv('FACTORY_GH_TOKEN')
-          idea=os.getenv('IDEA')
-          prod=os.getenv('PRODUCT_NAME')
           g=Github(token)
           user=g.get_user()
+          idea="${{ inputs.idea }}"
+          prod="${{ inputs.product_name }}"
           genre='puzzle-arcade'
           tname=f'exp-template-{genre}'
           try:
               tmpl=g.get_repo(f'{user.login}/{tname}')
               new=user.create_repo_from_template(name=prod, template_repo=tmpl, private=False, description=idea)
-              print(f'Created from template: {new.html_url}')
+              print(f'Created {new.html_url}')
           except Exception as e:
-              print(f'Fallback create empty: {e}')
+              print(f'Fallback {e}')
               new=user.create_repo(prod, private=False, description=idea)
-              print(f'Created empty: {new.html_url}')
-          "
+          PY
